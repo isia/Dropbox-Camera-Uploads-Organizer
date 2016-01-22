@@ -32,7 +32,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
         by_day: if True, organizes images into day subdirectories under each month directory
 
     Returns:
-        bool: False if  'Camera Uploads' directory could not be found or at least one matching file could not be moved
+        bool: False if at least one matching file could not be moved
 
     """
 
