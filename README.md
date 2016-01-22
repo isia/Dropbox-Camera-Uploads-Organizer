@@ -9,6 +9,9 @@ Scans through source directory and subdirectories, and moves files whose names m
     camera_uploads: location of "Camera Uploads" folder to organize within Dropbox. Defaults to standard.
     by_day: If True, organizes images into day subdirectories under each month directory. Otherwise, images will be stored in month directories. Defaults to True.
 
+#### Todo
+set up command line argument parsing
+
 #### File Naming Convention:
     'YYYY-MM-DD HH.MM.SS-V.ext'
     where YYYY is year, MM is month, DD is day, HH is hour in 24-hour format, MM is minute,  SS is seconds, and ext is file extension.
