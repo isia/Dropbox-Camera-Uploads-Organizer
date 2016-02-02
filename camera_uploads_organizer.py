@@ -1,11 +1,7 @@
-# import argparse
+import argparse
 import logging
 import os
 import re
-
-
-# todo: set up argument parsing
-# parser = argparse.ArgumentParser(description='')
 
 
 def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Date', camera_uploads='Camera Uploads',
@@ -149,12 +145,30 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
     return complete_success
 
 
-# run the function with default arguments
-success = organize_camera_uploads()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dropbox', '-db', action='store', nargs=1, default='~\Dropbox\\', type=str,
+                        metavar='"PATH"', dest='db_location', help='Location of the Dropbox directory.')
+    parser.add_argument('--destination', '-dst', action='store', nargs=1, default='Photos\By Date', type=str,
+                        metavar='"PATH"', help='Location of the destination direction where the files will \
+                         be organized. Must be under the Dropbox Directory\' file tree.')
+    parser.add_argument('--camera-uploads', '-cu', action='store', nargs=1, default='Camera Uploads', type=str,
+                        metavar='"PATH"', help='Location of the source directory. Must be under the \
+                        Dropbox directory\'s file tree.')
+    parser.add_argument('--sort-month-only', '-m', action='store_false', dest='by_day',
+                        help='If this flag is present, files will be organized into year and month subdirectories, \
+                        but not day subdirectories.')
 
-if success:
-    print 'completed successfully'
-else:
-    print 'completed with some errors'
+    args = vars(parser.parse_args())
 
-raw_input('press return to close...')
+    success = organize_camera_uploads(db_location=args['db_location'],
+                                      destination=args['destination'],
+                                      camera_uploads=args['camera_uploads'],
+                                      by_day=args['by_day'])
+
+    if success:
+        print 'completed successfully'
+    else:
+        print 'completed with some errors'
+
+    # raw_input('press return to close...')
