@@ -126,8 +126,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
                                     match.group(2),  # extract month from file name (i.e. 04)
                                     match.group(3),  # extract day from file name (i.e. 13)
                                     filename)
-
-            new_path = os.path.join(new_path, filename)
+            
             try:
                 # perform the move
                 os.renames(file_path, new_path)
