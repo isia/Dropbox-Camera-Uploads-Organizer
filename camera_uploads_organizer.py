@@ -5,7 +5,7 @@ import re
 
 
 def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Date', camera_uploads='Camera Uploads',
-                            by_day=True):
+                            by_day=True, do_clean=False):
     """ Organizes the Dropbox 'Camera Uploads' Folder
 
     Scans through source directory and subdirectories,
@@ -38,8 +38,6 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
             or not type(camera_uploads) is str \
             or not type(by_day) is bool:
         raise TypeError
-
-    # region setup and format the path variables
 
     # expand db_location and destination from ~/ or ~user/ format
     db_location = os.path.expanduser(db_location)
@@ -87,7 +85,21 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
         logging.warn('camera uploads directory does not exist at "' + camera_uploads + '"')
         exit(0)
 
-    # endregion
+    # compile camera upload filename pattern for use later
+    cam_up_pattern = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})(-\d+)?( HDR)?\.([^\s]+)$')
+
+    # compile pattern for testing directories to clean
+    path_pattern = re.compile('^.+?\\\((\\d{4})|(\\d{2}))$')
+
+    def clean_empty_directories(path):
+        path_items = os.listdir(path)
+        if not (path_items == [] or path_items == ['.dropbox']):
+            for item in path_items:
+                sub_path = os.path.join(path, item)
+                if os.path.isdir(sub_path):
+                    clean_empty_directories(sub_path)
+        elif path_pattern.match(path):
+            os.removedirs(path)
 
     def move_files(source_directory, destination_directory):
 
@@ -116,7 +128,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
                 continue
 
             # check that the filename matches the camera upload naming convention. If not, continue
-            match = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})(-\d*)?\.(.{3,})$').match(filename)
+            match = cam_up_pattern.match(filename)
             if match is None:
                 continue
 
@@ -126,7 +138,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
                                     match.group(2),  # extract month from file name (i.e. 04)
                                     match.group(3),  # extract day from file name (i.e. 13)
                                     filename)
-            
+
             try:
                 # perform the move
                 os.renames(file_path, new_path)
@@ -140,6 +152,10 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
 
     # begin moving and assign return value to a boolean
     complete_success = move_files(camera_uploads, destination)
+
+    # remove empty directories
+    if do_clean:
+        clean_empty_directories(destination)
 
     return complete_success
 
@@ -157,17 +173,20 @@ if __name__ == '__main__':
     parser.add_argument('--sort-month-only', '-m', action='store_false', dest='by_day',
                         help='If this flag is present, files will be organized into year and month subdirectories, \
                         but not day subdirectories.')
+    parser.add_argument('--clean', '-cl', action='store_true', dest='do_clean',
+                        help="If this flag is present, empty directories under the destination path will be deleted.")
 
     args = vars(parser.parse_args())
 
     success = organize_camera_uploads(db_location=args['db_location'],
                                       destination=args['destination'],
                                       camera_uploads=args['camera_uploads'],
-                                      by_day=args['by_day'])
+                                      by_day=args['by_day'],
+                                      do_clean=args['do_clean'])
 
     if success:
         print 'completed successfully'
     else:
         print 'completed with some errors'
 
-    # raw_input('press return to close...')
+        # raw_input('press return to close...')
