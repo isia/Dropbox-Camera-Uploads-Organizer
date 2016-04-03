@@ -100,7 +100,11 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
 
         # if directory is empty, delete it
         if path_items == [] or path_items == ['.dropbox']:
-            os.removedirs(path)
+            print '"' + path + '" is empty. Removing...'
+            try:
+                os.rmdir(path)
+            except OSError:
+                print 'could not remove "' + path + '"'
 
         # if directory is not empty, recurse for each item in directory
         else:
@@ -161,6 +165,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
 
     # remove empty directories
     if do_clean:
+        print 'Beginning to search for and remove empty directories'
         clean_empty_directories(destination)
 
     return complete_success
