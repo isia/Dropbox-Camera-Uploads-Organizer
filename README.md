@@ -8,6 +8,7 @@ Scans through source directory and subdirectories, and moves files whose names m
     destination: Directory where the files will be organized to. Must be under your Dropbox directory.
     camera_uploads: location of "Camera Uploads" folder to organize within Dropbox. Defaults to standard.
     by_day: If True, organizes images into day subdirectories under each month directory. Otherwise, images will be stored in month directories. Defaults to True.
+    do_clean: if True, deletes empty directories contained under the destination path
 
 #### File Naming Convention:
     'YYYY-MM-DD HH.MM.SS-V.ext'
