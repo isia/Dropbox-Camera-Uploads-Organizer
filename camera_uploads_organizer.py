@@ -26,6 +26,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
         db_location: location of the 'Dropbox' directory. Defaults to standard 'Dropbox' Folder location '~/Dropbox'
         camera_uploads: location of 'Camera Uploads' folder to organize within Dropbox. Defaults to standard.
         by_day: if True, organizes images into day subdirectories under each month directory
+        do_clean: if True, deletes empty directories contained under the destination path
 
     Returns:
         bool: False if at least one matching file could not be moved
@@ -88,18 +89,23 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
     # compile camera upload filename pattern for use later
     cam_up_pattern = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})(-\d+)?( HDR)?\.([^\s]+)$')
 
-    # compile pattern for testing directories to clean
-    path_pattern = re.compile('^.+?\\\((\\d{4})|(\\d{2}))$')
-
+    # function to recursively remove empty directories under given path
     def clean_empty_directories(path):
+        # return None if path is not a directory
+        if not os.path.isdir(path):
+            return
+
+        # create list of items found in given directory
         path_items = os.listdir(path)
-        if not (path_items == [] or path_items == ['.dropbox']):
-            for item in path_items:
-                sub_path = os.path.join(path, item)
-                if os.path.isdir(sub_path):
-                    clean_empty_directories(sub_path)
-        elif path_pattern.match(path):
+
+        # if directory is empty, delete it
+        if path_items == [] or path_items == ['.dropbox']:
             os.removedirs(path)
+
+        # if directory is not empty, recurse for each item in directory
+        else:
+            for item in path_items:
+                clean_empty_directories(os.path.join(path, item))
 
     def move_files(source_directory, destination_directory):
 
