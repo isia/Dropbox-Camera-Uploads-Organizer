@@ -13,16 +13,9 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
     Moves each matching file into corresponding year and month subdirectories within the given
     destination directory.
 
-    The destination directory
-
-    Naming Convention:
-    'YYYY-MM-DD HH.MM.SS-V.ext' where YYYY is year, MM is month, DD is day,
-    HH is hour in 24-hour format, MM is minute,  SS is seconds, and ext is file extension.
-    The '-V' portion only appears when more than one photo is taken within the same second,
-    where the V is a digit denoting the order in which these intra-second pictures were taken)
-
     Args:
-        destination: directory where the files will be organized to. If not an absolute path, will be treated as subdirectory of db_location
+        destination: directory where the files will be organized to. If not an absolute path, will be treated as
+            subdirectory of db_location
         db_location: location of the 'Dropbox' directory. Defaults to standard 'Dropbox' Folder location '~/Dropbox'
         camera_uploads: location of 'Camera Uploads' folder to organize within Dropbox. Defaults to standard.
         by_day: if True, organizes images into day subdirectories under each month directory
@@ -87,7 +80,11 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
         exit(0)
 
     # compile camera upload filename pattern for use later
-    cam_up_pattern = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})(-\d+)?( HDR)?\.([^\s]+)$')
+    cam_up_pattern = re.compile(
+        r'^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})'  # date & time
+        r'(-\d+)?( HDR)?( \((.+)\'s conflicted copy \1-\2-\3\))?'  # optional bits
+        r'\.([^\s]+)$'  # file extension
+    )
 
     # function to recursively remove empty directories under given path
     def clean_empty_directories(path):
