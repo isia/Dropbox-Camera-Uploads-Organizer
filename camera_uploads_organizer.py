@@ -3,9 +3,13 @@ import logging
 import os
 import re
 
+DEST_PATH_FORMAT_FULL='full'
+DEST_PATH_FORMAT_MO='month_only'
+DEST_PATH_FORMAT_SHORT='short'
+
 
 def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Date', camera_uploads='Camera Uploads',
-                            by_day=True, do_clean=False):
+                            destination_format='full', do_clean=False):
     """ Organizes the Dropbox 'Camera Uploads' Folder
 
     Scans through source directory and subdirectories,
@@ -18,19 +22,18 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
             subdirectory of db_location
         db_location: location of the 'Dropbox' directory. Defaults to standard 'Dropbox' Folder location '~/Dropbox'
         camera_uploads: location of 'Camera Uploads' folder to organize within Dropbox. Defaults to standard.
-        by_day: if True, organizes images into day subdirectories under each month directory
+        destination_format: TODO: description
         do_clean: if True, deletes empty directories contained under the destination path
 
     Returns:
         bool: False if at least one matching file could not be moved
 
     """
-
     # verify argument types
     if not type(destination) is str \
             or not type(db_location) is str \
             or not type(camera_uploads) is str \
-            or not type(by_day) is bool:
+            or not type(destination_format) is str:
         raise TypeError
 
     # expand db_location and destination from ~/ or ~user/ format
@@ -86,6 +89,12 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
         r'\.([^\s]+)$'  # file extension
     )
 
+    dest_path_patterns = {
+        DEST_PATH_FORMAT_FULL   : ['{destination_directory}', '{year}', '{month:02d}', '{day:02d}', '{file_name}'],
+        DEST_PATH_FORMAT_MO     : ['{destination_directory}', '{year}', '{month:02d}', '{file_name}'],
+        DEST_PATH_FORMAT_SHORT  : ['{destination_directory}', '{year}', '{month:02d}.{day:02d}', '{file_name}'],
+    }
+
     # function to recursively remove empty directories under given path
     def clean_empty_directories(path):
         # return None if path is not a directory
@@ -139,15 +148,21 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
             if match is None:
                 continue
 
+            # creating list of path elements for destination
+            new_path_data = {'destination_directory' : destination_directory,
+                             'year'                  : int(match.group(1)),  # extract year from file name (i.e. 2015)
+                             'month'                 : int(match.group(2)),  # extract month from file name (i.e. 04)
+                             'day'                   : int(match.group(3)),  # extract day from file name (i.e. 13)
+                             'file_name'             : filename,
+                             }
+
             # build destination path
-            new_path = os.path.join(destination_directory,
-                                    match.group(1),  # extract year from file name (i.e. 2015)
-                                    match.group(2),  # extract month from file name (i.e. 04)
-                                    match.group(3),  # extract day from file name (i.e. 13)
-                                    filename)
+            new_path = (os.path.join(*dest_path_patterns[destination_format])).format(**new_path_data)
 
             try:
                 # perform the move
+                print (file_path, new_path)
+                exit(1)
                 os.renames(file_path, new_path)
                 print filename, " successfully moved"
             except OSError:
@@ -178,23 +193,29 @@ if __name__ == '__main__':
     parser.add_argument('--camera-uploads', '-cu', action='store', nargs=1, default='Camera Uploads', type=str,
                         metavar='"PATH"', help='Location of the source directory. Must be under the \
                         Dropbox directory\'s file tree.')
-    parser.add_argument('--sort-month-only', '-m', action='store_false', dest='by_day',
-                        help='If this flag is present, files will be organized into year and month subdirectories, \
-                        but not day subdirectories.')
+    parser.add_argument('--destination-format', '-df', choices=[DEST_PATH_FORMAT_FULL,
+                                                                DEST_PATH_FORMAT_MO,
+                                                                DEST_PATH_FORMAT_SHORT], default=DEST_PATH_FORMAT_FULL,
+                        action='store', dest='destination_format', type=str,
+                        help='Select one of formats to store destination files.')
     parser.add_argument('--clean', '-cl', action='store_true', dest='do_clean',
                         help="If this flag is present, empty directories under the destination path will be deleted.")
 
     args = vars(parser.parse_args())
 
-    success = organize_camera_uploads(db_location=args['db_location'],
-                                      destination=args['destination'],
+    def safe_list_get (l, idx, default):
+        try:
+            return l[idx]
+        except IndexError:
+            return default
+
+    success = organize_camera_uploads(db_location=safe_list_get(args['db_location'], 0, None),
+                                      destination=safe_list_get(args['destination'], 0, None),
                                       camera_uploads=args['camera_uploads'],
-                                      by_day=args['by_day'],
+                                      destination_format=args['destination_format'],
                                       do_clean=args['do_clean'])
 
     if success:
         print 'completed successfully'
     else:
         print 'completed with some errors'
-
-        # raw_input('press return to close...')
