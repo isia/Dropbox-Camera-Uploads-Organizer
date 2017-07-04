@@ -161,8 +161,6 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
 
             try:
                 # perform the move
-                print (file_path, new_path)
-                exit(1)
                 os.renames(file_path, new_path)
                 print filename, " successfully moved"
             except OSError:
