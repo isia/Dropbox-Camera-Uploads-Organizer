@@ -85,7 +85,7 @@ def organize_camera_uploads(db_location='~\Dropbox\\', destination='Photos\By Da
     # compile camera upload filename pattern for use later
     cam_up_pattern = re.compile(
         r'^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2})\.(\d{2})'  # date & time
-        r'( HDR)?(-\d+)?( \((.+)\'s conflicted copy \1-\2-\3\))?'  # optional bits
+        r'( HDR)?(-\d+)?( \((.+)\'s conflicted copy \1-\2-\3\))?(-[1-9])?'  # optional bits
         r'\.([^\s]+)$'  # file extension
     )
 
